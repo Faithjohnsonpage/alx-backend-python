@@ -9,5 +9,11 @@ async def wait_n(n: int, max_delay: int) -> List[float]:
     """This async routine calls wait_n and spawns wait_random n
     times with the specified max_delay"""
     tasks = [wait_random(max_delay) for _ in range(n)]
-    results = await asyncio.gather(*tasks)
+    results = []
+    
+    # Gather the results as they complete
+    for completed_task in asyncio.as_completed(tasks):
+        result = await completed_task
+        results.append(result)
+    
     return results
