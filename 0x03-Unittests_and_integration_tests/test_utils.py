@@ -76,7 +76,6 @@ class TestGetJson(unittest.TestCase):
     get_json function, ensuring it handles different URLs and returns
     the expected JSON payloads without making actual HTTP requests.
     """
-
     @patch('utils.requests.get')
     def test_get_json(self, mock_get):
         """
