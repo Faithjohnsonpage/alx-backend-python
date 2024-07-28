@@ -76,8 +76,13 @@ class TestGetJson(unittest.TestCase):
     get_json function, ensuring it handles different URLs and returns
     the expected JSON payloads without making actual HTTP requests.
     """
+
+    @parameterized.expand([
+        ('http://example.com', {'payload': True}),
+        ('http://holberton.io', {'payload': False})
+    ])
     @patch('utils.requests.get')
-    def test_get_json(self, mock_get):
+    def test_get_json(self, test_url, test_payload, mock_get):
         """
         Test that utils.get_json returns the expected result for various URLs.
 
@@ -88,6 +93,10 @@ class TestGetJson(unittest.TestCase):
 
         Parameters
         ----------
+        test_url : str
+            The URL to be tested.
+        test_payload : dict
+            The expected JSON payload.
         mock_get : unittest.mock.Mock
             The patched requests.get method.
 
@@ -101,27 +110,16 @@ class TestGetJson(unittest.TestCase):
         - The mocked get method is called exactly once per input URL.
         - The output of get_json is equal to the expected test_payload.
         """
-        test_cases = [
-            ("http://example.com", {"payload": True}),
-            ("http://holberton.io", {"payload": False})
-        ]
-
-        # Create a mock response object
         mock_response = Mock()
+        # Set the mock response to return the test payload
+        mock_response.json.return_value = test_payload
+        # Assign the mock response to the mock get method
+        mock_get.return_value = mock_response
 
-        for test_url, test_payload in test_cases:
-            # Set the mock response to return the test payload
-            mock_response.json.return_value = test_payload
-            # Assign the mock response to the mock get method
-            mock_get.return_value = mock_response
+        # Call the function under test
+        result = utils.get_json(test_url)
 
-            # Call the function under test
-            result = utils.get_json(test_url)
-
-            # Check that the mock get method was called with the correct URL
-            mock_get.assert_called_once_with(test_url)
-            # Check that the result matches the expected payload
-            self.assertEqual(result, test_payload)
-
-            # Reset mock to handle the next test case
-            mock_get.reset_mock()
+        # Check that the mock get method was called with the correct URL
+        mock_get.assert_called_once_with(test_url)
+        # Check that the result matches the expected payload
+        self.assertEqual(result, test_payload)
